@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sockets</title>
+
+    <script>
+        const ROOMID = "<%= roomId %>"
+        // console.log(ROOMID);
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --theme: #5177FF;
+        }
+
+        body {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .frame {
+            background: #FFFFFF;
+            box-shadow: 0px 0px 50px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 400px;
+            position: relative;
+            height: 85vh;
+        }
+
+        .frame header {
+            position: absolute;
+            width: 370px;
+            display: flex;
+            height: 28px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background-color: rgba(238, 238, 238, 0.523);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            backdrop-filter: blur(30px);
+        }
+
+        .frame .first-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .first-header .title {
+            display: flex;
+            align-items: center;
+        }
+
+        .title h2 {
+            font-size: 18px;
+            letter-spacing: -0.7px;
+        }
+
+        .frame .first-header .title img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .back-icon {
+            margin-right: 10px;
+        }
+
+        .back-icon, .info-icon {
+            font-size: 21px;
+            color: var(--theme);
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .back-icon:hover, .info-icon:hover {
+            opacity: 0.6;
+            transition: .15s;
+        }
+
+        .modal {
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: #ffffff4c;
+            backdrop-filter: blur(3px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contents {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #FFFFFF;
+            box-shadow: 0px 0px 50px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 11px;
+            padding: 20px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            width: 360px;
+        }
+
+        .contents h1 {
+            letter-spacing: -1px;
+            font-weight: 800;
+            font-size: 23px;
+        }
+        
+        .contents input {
+            height: 40px;
+            margin-top: 10px;
+            text-indent: 10px;
+            border: none;
+            border-radius: 7px;
+            background-color: #eeeeee;
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
+            font-weight: 700;
+            outline: none;
+        }
+
+        .contents button {
+            height: 40px;
+            background-color: var(--theme);
+            font-weight: 800;
+            border: none;
+            color: white;
+            border-radius: 7px;
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
+            transition: .15s;
+            cursor: pointer;
+        }
+
+        .contents button:hover {
+            opacity: 0.8;
+            transition: .15s;
+        }
+
+        .frame footer {
+            /* position: absolute; */
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid rgb(214, 214, 214);
+            background-color: white;
+        }
+
+        footer input {
+            flex: 1;
+            margin: 10px 0px 10px 10px;
+            height: 37px;
+            text-indent: 10px;
+            border: none;
+            border-radius: 7px;
+            background-color: #eeeeee;
+            font-weight: 700;
+            outline: none;
+        }
+
+        footer button {
+            margin: 10px 10px 10px 0px;
+            margin: 10px;
+            height: 34px;
+            width: 34px;
+            border: none;
+            border-radius: 100px;
+            background-color: #eeeeee;
+            font-weight: 700;
+            outline: none;
+            background-color: var(--theme);
+            color: white;
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        footer button:hover {
+            opacity: 0.8;
+            transition: .15s;
+        }
+
+        .chats {
+            height: 78.8vh;
+            background-color: white;
+            overflow-y: scroll;
+            display: flex;
+            flex-direction: column;
+            justify-content: end;
+            padding-left: 5px;
+        }
+
+        .chats .chat {
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+            background-color: #E5E5E5;
+            width: fit-content;
+            padding: 5px 7.5px;
+            margin: 5px;
+            max-width: 70%;
+            border-radius: 8px;
+        }
+
+        .chat span, .mine span {
+            font-weight: 600 !important;
+        }
+
+        .chat small {
+            font-size: 8px;
+            color: gray;
+        }
+
+        .mine {
+            align-self: flex-end;
+            background-color: var(--theme) !important;
+            color: white;
+        }
+
+        .mine small {
+            color: rgb(223, 223, 223);
+            font-weight: 600 !important;
+        }
+
+        .mine span {
+            font-weight: 600 !important;
+        }
+
+        .global {
+            box-shadow: 0px 0px 50px 4px rgba(0, 0, 0, 0.1);
+            padding: 4px 12px;
+            border-radius: 6px;
+            width: fit-content;
+            display: flex;
+            margin: 5px auto;
+            color: var(--theme);
+            background-color: rgba(213, 213, 213, 0.653);
+            font-size: 12px;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="frame">
+        <header>
+            <div class="first-header">
+                <ion-icon class="back-icon" name="chevron-back-outline"></ion-icon>
+                <div class="title">
+                    <img src="https://images.unsplash.com/photo-1481349518771-20055b2a7b24?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8cmFuZG9tfGVufDB8fDB8fA%3D%3D&w=1000&q=80" alt="random">
+                    <h2>Group Name</h2>
+                </div>
+            </div>
+            <ion-icon class="info-icon" name="information-circle-outline"></ion-icon>
+        </header>
+
+        <div class="chats">
+            <div class="chat">
+                <span>this is the message</span>
+                <small>09:48 | Demo User</small>
+            </div>
+            <div class="chat">
+                <span>this is the message part two...</span>
+                <small>09:48 | Demo User</small>
+            </div>
+            <div class="chat mine">
+                <span>this is the message part three... and this is mine</span>
+                <small>09:48 | Demo User</small>
+            </div>
+            <div class="global">
+                <small>Arnav joined the chat</small>
+            </div>
+        </div>
+
+        <footer>
+            <input type="text" placeholder="Type your message here">
+            <button><ion-icon style="font-size: 17px; margin-top: 3px;" name="arrow-up-outline"></ion-icon></button>
+        </footer>
+    </div>
+</body>
+</html>
