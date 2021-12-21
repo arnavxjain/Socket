@@ -11,7 +11,7 @@ const { v4: uuidV4 } = require("uuid");
 app.set("view engine", "ejs");
 app.use(express.static('public'));
 
-let wordpairs = ['room1', 'room2', 'room3']; 
+let wordpairs = ['room1', 'room2', 'room3', 'room4', 'room5']; 
 
 app.get("/", (req, res) => {
     res.redirect(`/${wordpairs[Math.floor(Math.random() * wordpairs.length)]}`);

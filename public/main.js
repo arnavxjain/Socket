@@ -19,9 +19,19 @@ function getTime() {
 
 joinBtn.addEventListener("click", () => {
     if (name.value !== '') {
+        username = name.value;
         socket.emit('join-room', ROOMID, name.value);
     }
 });
+
+name.addEventListener("keypress", (e) => {
+    if (e.which == 13 || e.keyCode == 13) {
+        if (name.value !== '') {
+            username = name.value;
+            socket.emit('join-room', ROOMID, name.value);
+        }
+    }
+})
 
 function newUser(username) {
 
@@ -33,19 +43,19 @@ socket.on('user-connected', data => {
     chats.innerHTML +=
     `
     <div class="global">
-        <small>${data} has joined the chat</small>
+        <small>${data === username ? "You joined the chat" : data + ' joined the chat'}</small>
     </div>
     `;
-    username = data;
+    // username = data;
 });
 
 socket.on('group-message', data => {
     console.log(data);
     chats.innerHTML += 
     `
-    <div class="chat">
+    <div class="chat ${data.sender === username && "mine"}">
         <span>${data.message}</span>
-        <small>${data.time} | ${data.sender}</small>
+        <small>${data.time} | ${data.sender === username ? "You" : data.sender}</small>
     </div>
     `;
 });
@@ -53,13 +63,15 @@ socket.on('group-message', data => {
 mainInput.addEventListener("keypress", (e) => {
     if (e.which == 13 || e.keyCode == 13) {
 
-        let currentMessage = {
-            message: mainInput.value,
-            sender: username,
-            time: getTime()
-        };
-
-        socket.emit('message', currentMessage);
-        mainInput.value = "";
+        if (e.target.value !== '') {
+            let currentMessage = {
+                message: mainInput.value,
+                sender: username,
+                time: getTime()
+            };
+    
+            socket.emit('message', currentMessage);
+            mainInput.value = "";
+        }
     }
 })
