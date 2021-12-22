@@ -7,7 +7,13 @@ const chats = document.querySelector("#chats");
 
 const mainInput = document.querySelector("#chat-input");
 
+let pars = document.querySelector("#pars");
+
 let username;
+let participants = [];
+
+let timer;
+const waitTime = 1000;
 
 function getTime() {
     let time = new Date(); 
@@ -33,8 +39,14 @@ name.addEventListener("keypress", (e) => {
     }
 })
 
-function newUser(username) {
-
+function updatePars(data) {
+    pars.innerHTML = '';
+    data.map(user => {
+        pars.innerHTML +=
+        `
+        <div class="${user === username && 'myname'}">${user === username ? 'You' : user}</div>
+        `
+    });
 }
 
 socket.on('user-connected', data => {
@@ -46,11 +58,37 @@ socket.on('user-connected', data => {
         <small>${data === username ? "You joined the chat" : data + ' joined the chat'}</small>
     </div>
     `;
-    // username = data;
 });
+
+socket.on('participants', data => {
+    updatePars(data);
+    console.log(data);
+});
+
+socket.on('typing-in', sender => {
+    console.log(sender + ' is typing');
+    if (sender !== username) {
+        chats.innerHTML +=
+        `
+        <div class="hint" id="hint">
+            <span class="user">${sender}</span> is typing...
+        </div>
+        `;
+    }
+});
+
+socket.on('hide-typing', () => {
+    console.log('typing hidden');
+    const hint = document.getElementsByClassName("hint");
+    
+    while (hint[0]) {
+        hint[0].parentElement.removeChild(hint[0]);
+    }
+})
 
 socket.on('group-message', data => {
     console.log(data);
+    console.log(username);
     chats.innerHTML += 
     `
     <div class="chat ${data.sender === username && "mine"}">
@@ -58,6 +96,8 @@ socket.on('group-message', data => {
         <small>${data.time} | ${data.sender === username ? "You" : data.sender}</small>
     </div>
     `;
+
+    chats.scrollTop = chats.scrollHeight;
 });
 
 mainInput.addEventListener("keypress", (e) => {
@@ -75,3 +115,28 @@ mainInput.addEventListener("keypress", (e) => {
         }
     }
 })
+
+let infoIcon = document.querySelector("#info-icon");
+let tooltip = document.querySelector("#tooltip");
+
+infoIcon.addEventListener("click", () => {
+    if (tooltip.style.display !== "flex") {
+        tooltip.style.display = "flex";
+        infoIcon.setAttribute("name", "close-circle-outline");
+    } else {
+        infoIcon.setAttribute("name", "information-circle-outline");
+        tooltip.style.display = "none";
+    }
+});
+
+mainInput.addEventListener("keypress", () => {
+    socket.emit('typing-out', username);
+    window.clearTimeout(timer);
+});
+
+mainInput.addEventListener("keyup", (e) => {
+    window.clearTimeout(timer); // prevent errant multiple timeouts from being generated
+	timer = window.setTimeout(() => {
+        socket.emit('typing-stopped');
+    }, waitTime)
+});

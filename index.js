@@ -11,7 +11,8 @@ const { v4: uuidV4 } = require("uuid");
 app.set("view engine", "ejs");
 app.use(express.static('public'));
 
-let wordpairs = ['room1', 'room2', 'room3', 'room4', 'room5']; 
+let wordpairs = ['room1', 'room2', 'room3', 'room4', 'room5'];
+let participants = []; 
 
 app.get("/", (req, res) => {
     res.redirect(`/${wordpairs[Math.floor(Math.random() * wordpairs.length)]}`);
@@ -28,12 +29,26 @@ io.on("connection", function(socket) {
         socket.join(roomId);
         io.to(roomId).emit("user-connected", username); // bug 1: couldn't send to room, fixed with this
         roomID = roomId;
+        participants.push(username)
+        io.to(roomId).emit("participants", participants);
     });
 
-    socket.on('message', data => {
+    socket.on('message', async data => {
         console.log(data);
         io.to(roomID).emit('group-message', data);
-    })
+        let existing = await io.in(roomID).fetchSockets();
+        // console.log(existing);
+    });
+
+    socket.on('typing-out', sender => {
+        console.log(`${sender} is typing...`)
+        io.to(roomID).emit('typing-in', sender);
+    });
+
+    socket.on('typing-stopped', () => {
+        console.log('tpying stopped!');
+        io.to(roomID).emit('hide-typing');
+    });
 
 });
 
